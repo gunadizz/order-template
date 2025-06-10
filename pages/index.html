@@ -112,7 +112,7 @@
         let nama = data.get("nama"), wa = data.get("wa"), alamat = data.get("alamat");
         let catatan = data.get("catatan") || "-";
         let msg = `Order Template\nNama: ${nama}\nWA: ${wa}\nAlamat: ${alamat}\nLisensi: ${lisensi} (${harga})\nCatatan: ${catatan}\n\nBukti transfer: (cek email admin)`;
-        let url = `https://wa.me/62ADMINWA?text=${encodeURIComponent(msg)}`;
+        let url = `https://wa.me/6285341899229?text=${encodeURIComponent(msg)}`;
         setTimeout(()=>window.open(url,"_blank"), 1000);
         this.reset();
       } catch(e) {
