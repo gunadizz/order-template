@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order Lisensi Template Femmeia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Order Lisensi Template</h1>
+    <p class="subtitle">Pilih lisensi & isi data Anda, upload bukti transfer.<br>Order akan dikirim ke email admin & WhatsApp.</p>
+    <div class="license-cards">
+      <label class="license-card personal">
+        <input type="radio" name="lisensi" value="personal" checked>
+        <div class="card-body">
+          <div class="title"><span class="icon">👤</span> Personal License</div>
+          <div class="price"><del>Rp 150.000</del> <span>Rp 120.000</span></div>
+          <ul>
+            <li>1x penggunaan personal</li>
+            <li>Update minor gratis</li>
+            <li>Support dasar via WhatsApp</li>
+          </ul>
+        </div>
+      </label>
+      <label class="license-card developer">
+        <input type="radio" name="lisensi" value="developer">
+        <div class="card-body">
+          <div class="title"><span class="icon">🛠️</span> Developer License</div>
+          <div class="price">Rp 225.000</div>
+          <ul>
+            <li>Untuk developer/tim kecil</li>
+            <li>Update minor gratis</li>
+            <li>Support WhatsApp & Email</li>
+          </ul>
+        </div>
+      </label>
+      <label class="license-card commercial">
+        <input type="radio" name="lisensi" value="commercial">
+        <div class="card-body">
+          <div class="title"><span class="icon">📄</span> Commercial License</div>
+          <div class="price">Rp 300.000</div>
+          <ul>
+            <li>Unlimited project/client</li>
+            <li>Prioritas support WhatsApp</li>
+            <li>Diskon major update 50%</li>
+          </ul>
+        </div>
+      </label>
+    </div>
+    <form id="orderForm" enctype="multipart/form-data">
+      <label>Nama Lengkap*
+        <input type="text" name="nama" required>
+      </label>
+      <div class="form-row">
+        <label>Email*
+          <input type="email" name="email" required>
+        </label>
+        <label>No WhatsApp*
+          <input type="text" name="wa" required placeholder="08xxxxxxxxxx">
+        </label>
+      </div>
+      <label>Alamat*
+        <textarea name="alamat" rows="2" required></textarea>
+      </label>
+      <label>Catatan / Keterangan
+        <textarea name="catatan" rows="2"></textarea>
+      </label>
+      <label>Upload Bukti Transfer (JPG/PNG, max 3MB)*
+        <input type="file" name="bukti" accept="image/*" required>
+      </label>
+      <div class="success-msg" id="successMsg">Pesanan berhasil dikirim! Anda akan diarahkan ke WhatsApp.</div>
+      <div class="error-msg" id="errorMsg"></div>
+      <button class="cta-button" type="submit" id="submitBtn">Kirim & Lanjut WA</button>
+    </form>
+  </div>
+  <script>
+    // Lisensi radio visual sync
+    document.querySelectorAll('.license-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.license-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    // Submit handler
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      document.getElementById("successMsg").style.display = "none";
+      document.getElementById("errorMsg").style.display = "none";
+      document.getElementById("submitBtn").disabled = true;
+      // Get form data
+      let data = new FormData(this);
+      let lisensi = data.get("lisensi");
+      let harga = "Rp 120.000";
+      if (lisensi === "developer") harga = "Rp 225.000";
+      if (lisensi === "commercial") harga = "Rp 300.000";
+      // Validate size
+      let file = data.get("bukti");
+      if (file && file.size > 3 * 1024 * 1024) {
+        showError("Ukuran gambar maksimal 3MB.");
+        return;
+      }
+      // POST to API
+      try {
+        let res = await fetch("/api/order", { method: "POST", body: data });
+        if (!res.ok) throw new Error("Gagal submit, coba lagi.");
+        document.getElementById("successMsg").style.display = "block";
+        // WhatsApp redirect
+        let nama = data.get("nama"), wa = data.get("wa"), alamat = data.get("alamat");
+        let catatan = data.get("catatan") || "-";
+        let msg = `Order Template\nNama: ${nama}\nWA: ${wa}\nAlamat: ${alamat}\nLisensi: ${lisensi} (${harga})\nCatatan: ${catatan}\n\nBukti transfer: (cek email admin)`;
+        let url = `https://wa.me/62ADMINWA?text=${encodeURIComponent(msg)}`;
+        setTimeout(()=>window.open(url,"_blank"), 1000);
+        this.reset();
+      } catch(e) {
+        showError(e.message || "Gagal mengirim pesanan.");
+      }
+      document.getElementById("submitBtn").disabled = false;
+    });
+    function showError(msg) {
+      document.getElementById("errorMsg").innerText = msg;
+      document.getElementById("errorMsg").style.display = "block";
+      document.getElementById("submitBtn").disabled = false;
+    }
+  </script>
+</body>
+        </html>
